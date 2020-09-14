@@ -1,8 +1,11 @@
 package edu.jsu.mcis;
 
-import edu.jsu.mcis.TicTacToeModel.Result;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import static java.lang.Integer.parseInt;
+import javax.swing.JButton;
 
-public class TicTacToeController {
+public class TicTacToeController implements ActionListener {
 
     private final TicTacToeModel model;
     private final TicTacToeView view;
@@ -11,44 +14,61 @@ public class TicTacToeController {
 
     public TicTacToeController(final int width) {
 
-        /* Initialize model, view, and width */
+        /* Initialize model and view */
 
         model = new TicTacToeModel(width);
-        view = new TicTacToeView();
+        view = new TicTacToeView(this, width);
 
     }
 
-    public void start() {
-
-        /* MAIN LOOP (repeats until game is over) */
-
-        /*
-         * Display the board using the View's "showBoard()", then use "getNextMove()" to
-         * get the next move from the player. Enter the move (using the Model's
-         * "makeMark()", or display an error using the View's "showInputError()" if the
-         * move is invalid.
-         */
-
-        // INSERT YOUR CODE HERE
-        boolean gameOver;
-        do{
-            view.showBoard(model.toString());
-            TicTacToeMove move = view.getNextMove(model.isXTurn());
-
-            if(!model.makeMark(move.getRow(), move.getCol()))
-            {
-                view.showInputError();
-            }
-            gameOver = (model.getResult() != Result.NONE);
-
-        }while(!gameOver);
-        
-        /* After the game is over, show the final board and the winner */
-
-        view.showBoard(model.toString());
-
-        view.showResult(model.getResult().toString());
-        
+    public String getMarkAsString (int row, int col)
+    {
+        return(model.getMark(row, col).toString());
     }
 
+    public TicTacToeView getView()
+    {
+        return view;
+    }
+
+    @Override
+    public void actionPerformed (ActionEvent event)
+    {
+        /* This is the event handler for button clicks. 
+        First, acquire a reference to the clicked button and get its name */
+
+        String name = ((JButton) event.getSource()).getName();
+
+        // Parse the row and column from the name
+
+        int row = parseInt(name.substring(6, 7));
+        int col = parseInt(name.substring(7, 8));
+
+        //Make a mark at the specified row and column
+
+        model.makeMark(row, col);
+
+        //Update the view to show the new mark
+
+        view.updateSquares();
+
+        //Get new result
+
+        TicTacToeModel.Result result = model.getResult();
+
+        //if the game is over, disable the square and show the result
+
+        if(result != TicTacToeModel.Result.NONE)
+        {
+            view.disableSquares();
+            view.showResult(result.toString());
+        }
+        //Otherwise, leave the result field empty
+
+        else 
+        {
+            view.clearResult();
+
+        }
+    }
 }
